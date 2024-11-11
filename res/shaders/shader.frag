@@ -1,10 +1,13 @@
 #version 330 core
 
-in vec2 TexCoord; // texture coordinates from vertex shader
-out vec4 color;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 texcoord;
 
-uniform sampler2D ourTexture;
+out vec2 TexCoord; // output to fragment shader
+
+uniform mat4 MVP;
 
 void main() {
-    color = texture(ourTexture, TexCoord);  // sample the texture
+    gl_Position = MVP * vec4(position, 1.0);
+    TexCoord = texcoord;  // pass texture coordinates to fragment shader
 }
