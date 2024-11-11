@@ -3,100 +3,89 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <GL/freeglut.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "common.h"
+
+#define STB_IMAGE_IMPLEMENTATION
 #include "lib/std_image.h"
 
-#define WIDTH 1024
-#define HEIGHT 768
+#define WIDTH 1920
+#define HEIGHT 1080
+
+void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    fprintf(stderr, "OpenGL Debug: %s\n", message);
+}
 
 using namespace glm;
 
-static const GLfloat g_color_buffer_data[] = {
-    0.583f,  0.771f,  0.014f,
-    0.609f,  0.115f,  0.436f,
-    0.327f,  0.483f,  0.844f,
-    0.822f,  0.569f,  0.201f,
-    0.435f,  0.602f,  0.223f,
-    0.310f,  0.747f,  0.185f,
-    0.597f,  0.770f,  0.761f,
-    0.559f,  0.436f,  0.730f,
-    0.359f,  0.583f,  0.152f,
-    0.483f,  0.596f,  0.789f,
-    0.559f,  0.861f,  0.639f,
-    0.195f,  0.548f,  0.859f,
-    0.014f,  0.184f,  0.576f,
-    0.771f,  0.328f,  0.970f,
-    0.406f,  0.615f,  0.116f,
-    0.676f,  0.977f,  0.133f,
-    0.971f,  0.572f,  0.833f,
-    0.140f,  0.616f,  0.489f,
-    0.997f,  0.513f,  0.064f,
-    0.945f,  0.719f,  0.592f,
-    0.543f,  0.021f,  0.978f,
-    0.279f,  0.317f,  0.505f,
-    0.167f,  0.620f,  0.077f,
-    0.347f,  0.857f,  0.137f,
-    0.055f,  0.953f,  0.042f,
-    0.714f,  0.505f,  0.345f,
-    0.783f,  0.290f,  0.734f,
-    0.722f,  0.645f,  0.174f,
-    0.302f,  0.455f,  0.848f,
-    0.225f,  0.587f,  0.040f,
-    0.517f,  0.713f,  0.338f,
-    0.053f,  0.959f,  0.120f,
-    0.393f,  0.621f,  0.362f,
-    0.673f,  0.211f,  0.457f,
-    0.820f,  0.883f,  0.371f,
-    0.982f,  0.099f,  0.879f
+// Vertex data with positions and texture coordinates
+static const GLfloat g_vertex_buffer_data[] = {
+    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f, 1.0f,
+    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+    1.0f,  1.0f, -1.0f,  1.0f, 0.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+    1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+    1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
+    1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+    1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+    1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+    -1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+    -1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+    -1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+    1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
+    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+    1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+    1.0f,  1.0f, -1.0f,  0.0f, 0.0f,
+    1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+    1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+    1.0f,  1.0f, -1.0f,  0.0f, 0.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+    1.0f, -1.0f,  1.0f,  0.0f, 0.0f
 };
 
+class DeltaTime {
+public:
+    DeltaTime() : lastTime(0.0), deltaTime(0.0) {}
 
-static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-    -1.0f,-1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, // triangle 1 : end
-    1.0f, 1.0f,-1.0f, // triangle 2 : begin
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, // triangle 2 : end
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f,
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
+    // Call this every frame to update delta time
+    void Update() {
+        double currentTime = glfwGetTime();  // Get the current time
+        deltaTime = currentTime - lastTime;  // Calculate the delta time
+        lastTime = currentTime;              // Update lastTime for the next frame
+    }
+
+    // Get the delta time (time between frames)
+    double GetDeltaTime() const {
+        return deltaTime;
+    }
+
+private:
+    double lastTime;   // Time of the previous frame
+    double deltaTime;  // Time difference between current and previous frame
 };
 
 int main() {
     glewExperimental = true;
     if (!glfwInit()) {
-        fprintf(stderr, "oh poop");
+        fprintf(stderr, "Failed to initialize GLFW\n");
         return -1;
     }
 
@@ -106,106 +95,168 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window;
-    window = glfwCreateWindow(width, height, "tutorial 01", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL Tutorial", nullptr, nullptr);
     if (window == nullptr) {
-        fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+        fprintf(stderr, "Failed to open GLFW window\n");
         glfwTerminate();
         return -1;
     }
 
     glfwMakeContextCurrent(window);
-    glewExperimental=true;
+    glewExperimental = true;
     if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "oh poop 2");
+        fprintf(stderr, "GLEW initialization failed\n");
         return -1;
     }
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
-    
-    GLuint vertexbuffer;
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+    GLuint vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-    struct {
-        int width;
-        int height;
-        int mu;
-    }img;
+    // Load texture
+    int width, height, channels;
+    unsigned char* image = stbi_load("res/textures/grass.jpg", &width, &height, &channels, 0);
+    if (!image) {
+        fprintf(stderr, "Failed to load texture\n");
+        return -1;
+    }
 
     GLuint texture;
-  /*
-    glGenBuffers(1, &colorbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-*/
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(image);
 
-    // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders( "res/shaders/vertex.vert", "res/shaders/shader.frag" );
+    GLuint programID = LoadShaders("res/shaders/vertex.vert", "res/shaders/shader.frag");
     glUseProgram(programID);
-/*
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);*/
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(DebugCallback, nullptr);
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    do{
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set a non-black clear color
+
+    DeltaTime frametime;
+
+    glm::vec3 position = glm::vec3(2, 2, 2);
+
+    float init_fov = 90.0f;
+
+    float speed = 3.0f;
+    float mouse_speed = 0.01f;
+glEnable(GL_CULL_FACE);
+
+glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    struct {
+        double horizontal = 3.14f;
+        double vertical = 0.0f;
+    }angle;
+    do {
+        frametime.Update();
+        float deltatime = frametime.GetDeltaTime();
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
+        double x_pos;
+        double y_pos;
+
+        glfwGetCursorPos(window, &x_pos, &y_pos);
+        
+        glfwSetCursorPos(window, WIDTH/2.0, HEIGHT/2.0);
+
+
+        angle.horizontal += mouse_speed * deltatime * float(WIDTH/2 - x_pos);
+        angle.vertical += mouse_speed * deltatime * float(HEIGHT/2 - y_pos);
+        
+        glm::vec3 dir (
+            cos(angle.vertical) * sin(angle.horizontal),
+            sin(angle.vertical),
+            cos(angle.vertical) * cos(angle.horizontal)
+        );
+
+        glm::vec3 right = glm::vec3(
+            sin(angle.horizontal - 3.14f/2.0f),
+            0,
+            cos(angle.horizontal - 3.14f/2.0f)
+        );
+
+        glm::vec3 up = glm::cross(right, dir);
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            position += dir * deltatime * speed;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            position -= dir * deltatime * speed;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            position += right * deltatime * speed;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            position -= right * deltatime * speed;
+        }
+
+        // Create projection and view matrices
+        glm::mat4 projection = glm::perspective(glm::radians(init_fov), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
         
         glm::mat4 view = glm::lookAt(
-            glm::vec3(5, 2, 3),
-            glm::vec3(0, 0, 0),
+            position,
+            position + dir,
+            up);
+    
+        // Base model matrix (no translation for the first cube)
+        glm::mat4 model1 = glm::mat4(1.0f); 
 
-            glm::vec3(0, 1, 0)
-        );
+        // Translate the second cube to the left
+        glm::mat4 model2 = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)); // Shift by -2.0f along x-axis
+        
+        // MVP matrices for each cube
+        glm::mat4 MVP1 = projection * view * model1;
+        glm::mat4 MVP2 = projection * view * model2;
 
-        glm::mat4 model = glm::mat4(1.0f);
-
-        glm::mat4 mvp = projection * view * model;
-
-        GLuint matrix_id = glGetUniformLocation(programID, "MVP");
-
-        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
-
-
-        // 1st attribute buffer : vertices
+        GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+        
+        // Draw the first cube
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
         glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-        3,                  // size
-        GL_FLOAT,           // type
-        GL_FALSE,           // normalized?
-        0,                  // stride
-        (void*)0            // array buffer offset
-        );
 
-                // 1st attribute buffer : vertices
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
         glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-        1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-        3,                  // size
-        GL_FLOAT,           // type
-        GL_FALSE,           // normalized?
-        0,                  // stride
-        (void*)0            // array buffer offset
-        );
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // Draw the triangle !
-        glDrawArrays(GL_TRIANGLES, 0, 12*3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+        // Draw the second cube (shifted left)
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
-        // Swap buffers
+
+
         glfwSwapBuffers(window);
         glfwPollEvents();
+    } while (glfwWindowShouldClose(window) == 0);
 
-    } 
-    while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&glfwWindowShouldClose(window) == 0 );
+    glDeleteBuffers(1, &vertexBuffer);
+    glDeleteVertexArrays(1, &VertexArrayID);
+glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+    glfwTerminate();
+    return 0;
 }
