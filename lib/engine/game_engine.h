@@ -24,20 +24,22 @@
 
 namespace game_engine {
 
-    struct base_transform{
+    struct Transform{
                     
-                // every object just has a basic square hitbox
-                // i (might) try and add a support later 
-                //for more complex hitboxes via making the size an array of vec3
-                glm::vec3 pos;
-                glm::vec3 size;
+        // every object just has a basic square hitbox
+        // i (might) try and add a support later 
+        //for more complex hitboxes via making the size an array of vec3
+        glm::vec3 pos;
+        glm::vec3 size;
                 
-                //google said ts was standard practice so imma js keep it until it breaks smt
-                struct{
-                    glm::vec3 forward;
-                    glm::vec3 up;
-                    glm::vec3 right;
-                }dir;
+        //google said ts was standard practice so imma js keep it until it breaks smt
+        struct{
+            glm::vec3 forward;
+            glm::vec3 up;
+            glm::vec3 right;
+        }dir;
+
+        void *data;
     };
 
     class component;
@@ -48,7 +50,7 @@ namespace game_engine {
             // something something opengl magic model, 
             GLuint model;
             
-            struct base_transform transform;
+            struct Transform transform;
             
             bool colliding = false;
             entity *colliding_partner = nullptr;
@@ -184,7 +186,7 @@ namespace game_engine {
             // and i can't think of anything better atm
             // this does allow for more freely passing data
             // to components but adds alot of boilerplate code
-            struct base_transform *transform;
+            struct Transform *transform;
 
 
             virtual void start() = 0;

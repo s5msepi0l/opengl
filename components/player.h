@@ -13,16 +13,18 @@ class player_controller: public game_engine::component {
             f64 vertical   = 0;
         }angle; 
 
-        void start() override {}
+        camera_perspective **cam;
+        void start() override {
+            cam = static_cast<camera_perspective**>(transform->data);
+        }
 
         void tick() override {
             f64 x_pos, y_pos;
 
-            
-        std::cout << "game_engine::component::player_controller::Position: \nglm::vec3(" << transform->pos.x << ", " 
+            std::cout << "game_engine::component::player_controller::Position: \nglm::vec3(" << transform->pos.x << ", " 
                   << transform->pos.y << ", " << transform->pos.z << ")\n";
 
-        std::cout << "deltatime: " << state.deltatime << '\n';
+            std::cout << "deltatime: " << state.deltatime << '\n';
             
 
             glfwGetCursorPos(state.window, &x_pos, &y_pos);
@@ -60,7 +62,12 @@ class player_controller: public game_engine::component {
             if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
                 transform->pos -= transform->dir.right * state.deltatime * speed;
             }
-            
+
+            if (cam != nullptr) {
+                std::cout << "Accessing memory\n";
+                (*cam)->pos = transform->pos;
+
+            }
         }
 
         void stop() override {}
@@ -71,25 +78,16 @@ class player_controller: public game_engine::component {
 
 class Player: public game_engine::entity {
     public:
-    struct player_transform : public game_engine::base_transform{
-        camera_perspective cam;  // New member to hold camera perspective
-    };
-
-    // Now the Player class has its own transform, which is a `player_transform`
-    player_transform Transform;  // This will hold position, size, direction and the camera perspective
-
 
         void init() {
             std::cout << "init() Player\n";
             transform.pos.x = 5;
             transform.pos.y = 5;
             transform.pos.z = 5;
+            
+            this->transform.data = new camera_perspective;
 
-            std::unique_ptr<player_controller> variable = std::make_unique<player_controller>();
-            variable->transform = &Transform;
-
-
-            this->add_component(std::move(variable));
+            this->add_component(std::make_unique<player_controller>());
         }
 
     private:

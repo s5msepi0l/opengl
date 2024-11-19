@@ -57,7 +57,10 @@ int main(int argc, const char **argv) {
         state.deltatime = Deltatime.update();
 
         state.game->tick();
-        state.renderer->render(&player.transform.cam);
+        state.renderer->render(
+            static_cast<camera_perspective*>(player.transform.data)
+            
+        );
 
         glfwSwapBuffers(state.window);
         glfwPollEvents();  
