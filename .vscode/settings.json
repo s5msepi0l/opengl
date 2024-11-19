@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "bitset": "cpp",
+        "fstream": "cpp",
+        "ostream": "cpp",
+        "cassert": "cpp",
+        "chrono": "cpp",
+        "random": "cpp",
+        "limits": "cpp",
+        "valarray": "cpp",
+        "algorithm": "cpp"
+    }
+}

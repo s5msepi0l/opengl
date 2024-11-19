@@ -6,7 +6,7 @@ class player_controller: public game_engine::component {
     public:
         
         f32 mouse_speed = 0.01;
-        f32 speed = 7.0;
+        f32 speed = 200.0;
 
         struct {
             f64 horizontal = 3.14f;
@@ -15,7 +15,9 @@ class player_controller: public game_engine::component {
 
         camera_perspective **cam;
         void start() override {
-            cam = static_cast<camera_perspective**>(transform->data);
+            std::cout << "casting...\n";
+            cam = reinterpret_cast<camera_perspective**>(&transform->data);
+            std::cout << "Done casting !\n";
         }
 
         void tick() override {
@@ -48,18 +50,22 @@ class player_controller: public game_engine::component {
             transform->dir.up = glm::cross(transform->dir.right, transform->dir.forward);
 
             if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS) {
+                std::cout << "KEY_PRESS W\n\n";
                 transform->pos += transform->dir.forward * state.deltatime * speed;
             }
             
             if (glfwGetKey(state.window, GLFW_KEY_S) == GLFW_PRESS) {
+                std::cout << "KEY_PRESS S\n\n";
                 transform->pos -= transform->dir.forward * state.deltatime * speed;
             }
             
             if (glfwGetKey(state.window, GLFW_KEY_D) == GLFW_PRESS) {
+                std::cout << "KEY_PRESS D\n\n";
                 transform->pos += transform->dir.right * state.deltatime * speed;
             }
             
             if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
+                std::cout << "KEY_PRESS A\n\n";
                 transform->pos -= transform->dir.right * state.deltatime * speed;
             }
 
@@ -86,8 +92,8 @@ class Player: public game_engine::entity {
             transform.pos.z = 5;
             
             this->transform.data = new camera_perspective;
-
-            this->add_component(std::make_unique<player_controller>());
+            std::unique_ptr<player_controller> charracter = std::make_unique<player_controller>();
+            this->add_component(std::move(charracter));
         }
 
     private:

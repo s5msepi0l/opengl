@@ -45,6 +45,7 @@ void game_engine::entity::tick() {
 void game_engine::entity::add_component(std::unique_ptr<component> comp) {
     std::cout << "adding component now\n";
 
+    comp->transform = &this->transform;
     comp->start();
     comps.push_back(std::move(comp));
 }

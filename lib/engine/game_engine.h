@@ -39,7 +39,7 @@ namespace game_engine {
             glm::vec3 right;
         }dir;
 
-        void *data;
+        void *data = nullptr;
     };
 
     class component;
