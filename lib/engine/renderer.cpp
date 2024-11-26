@@ -141,70 +141,85 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 }
 
 void pipeline_renderer::init() {
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
+// Vertex positions (g_vertex_buffer_data)
+glGenBuffers(1, &vertexBuffer);
+glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+// Vertex colors (g_color_buffer_data)
+glGenBuffers(1, &colorbuffer);
+glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 
-    programID = LoadShaders("res/shaders/vertex.vert", "res/shaders/shader.frag");
-    glUseProgram(programID);
+// Configure the vertex array object
+glGenVertexArrays(1, &VertexArrayID);
+glBindVertexArray(VertexArrayID);
 
-    glUseProgram(programID);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+// Position attribute (location 0)
+glEnableVertexAttribArray(0);
+glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+glVertexAttribPointer(
+    0,        // Location 0 in the shader
+    3,        // 3 components per vertex (x, y, z)
+    GL_FLOAT, // Data type
+    GL_FALSE, // Not normalized
+    5 * sizeof(GLfloat), // Stride (position + texcoords)
+    (void*)0  // Offset
+);
 
-    texture = load_cube_map_tx();
-    glActiveTexture(GL_TEXTURE0);
+// Color attribute (location 1)
+glEnableVertexAttribArray(1);
+glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+glVertexAttribPointer(
+    1,        // Location 1 in the shader
+    3,        // 3 components per vertex color (r, g, b)
+    GL_FLOAT, // Data type
+    GL_FALSE, // Not normalized
+    0,        // Stride
+    (void*)0  // Offset
+);
 
-    glfwSetInputMode(state.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-    glEnable(GL_CULL_FACE);
+}
+void pipeline_renderer::render(camera_perspective *cam) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Create projection and view matrices
+    glm::mat4 projection = glm::perspective(glm::radians(cam->fov), (float)state.width / state.height, 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(
+        cam->pos,
+        cam->pos + cam->dir.forwards,
+        cam->dir.up
+    );
+
+    // Base model matrix (identity for first cube)
+    glm::mat4 model1 = glm::mat4(1.0f);
+
+    // Model matrix for the second cube (shifted)
+    glm::mat4 model2 = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+
+    // MVP matrices
+    glm::mat4 MVP1 = projection * view * model1;
+    glm::mat4 MVP2 = projection * view * model2;
+
+    // Use shader program
+    glUseProgram(programID);
+
+    // Pass the MVP matrix for the first cube
+    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
+
+    // Draw the first cube
+    glBindVertexArray(VertexArrayID);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    // Pass the MVP matrix for the second cube
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
+
+    // Draw the second cube
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
-
-void pipeline_renderer::render(camera_perspective *cam) {
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-               // Create projection and view matrices
-            std::cout << state.width << std::endl;
-            glm::mat4 projection = glm::perspective(glm::radians(cam->fov), (float)state.width / state.height, 0.1f, 100.0f);
             
-            glm::mat4 view = glm::lookAt(
-                cam->pos,
-                cam->pos + cam->dir.forwards,
-                cam->dir.up);
-        
-            // Base model matrix (no translation for the first cube)
-            glm::mat4 model1 = glm::mat4(1.0f); 
 
-            // Translate the second cube to the left
-            glm::mat4 model2 = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)); // Shift by -2.0f along x-axis
-            
-            // MVP matrices for each cube
-            glm::mat4 MVP1 = projection * view * model1;
-            glm::mat4 MVP2 = projection * view * model2;
-
-            GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-            
-            // Draw the first cube
-            glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-            glEnableVertexAttribArray(0);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-
-            // Draw the second cube (shifted left)
-            glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-
-            glDisableVertexAttribArray(0);
-            glDisableVertexAttribArray(1);
-}
 
 pipeline_renderer::~pipeline_renderer() {
         glDeleteBuffers(1, &vertexBuffer);
