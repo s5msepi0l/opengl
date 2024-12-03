@@ -202,7 +202,7 @@ int main() {
 
     DeltaTime frametime;
 
-    glm::vec3 position = glm::vec3(2, 2, 2);
+    glm::vec3 position = glm::vec3(0, 0, 0);
 
     float init_fov = 90.0f;
 

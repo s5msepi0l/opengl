@@ -33,11 +33,7 @@ namespace game_engine {
         glm::vec3 size;
                 
         //google said ts was standard practice so imma js keep it until it breaks smt
-        struct{
-            glm::vec3 forward;
-            glm::vec3 up;
-            glm::vec3 right;
-        }dir;
+        direction dir;
 
         void *data = nullptr;
     };

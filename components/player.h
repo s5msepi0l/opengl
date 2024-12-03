@@ -5,7 +5,7 @@ using entity = game_engine::entity;
 class player_controller: public game_engine::component {
     public:
         
-        f32 mouse_speed = 0.01;
+        f32 mouse_speed = 0.02;
         f32 speed = 7.0;
 
         struct {
@@ -16,6 +16,7 @@ class player_controller: public game_engine::component {
         camera_perspective *cam;
         void start() override {
             cam = reinterpret_cast<camera_perspective*>(transform->data);
+            cam->dir.forward = glm::vec3(0.0, 0.0, 0.0);
         }
 
         void tick() override {
@@ -28,10 +29,12 @@ class player_controller: public game_engine::component {
             
 
             glfwGetCursorPos(state.window, &x_pos, &y_pos);
+            std::cout << "Mouse Position: " << x_pos << ", " << y_pos << std::endl;
+
             glfwSetCursorPos(state.window, state.width/2.0, state.height/2.0);
 
-            angle.horizontal += mouse_speed * state.deltatime * (f32)state.width/2.0 - x_pos;
-            angle.vertical   += mouse_speed * state.deltatime * (f32)state.height/2.0 - y_pos;
+            angle.horizontal += mouse_speed * state.deltatime * f32(state.width/2.0 - x_pos);
+            angle.vertical   += mouse_speed * state.deltatime * f32(state.height/2.0 - y_pos);
             
             transform->dir.forward = glm::vec3 (
                 cos(angle.vertical) * sin(angle.horizontal),
@@ -66,6 +69,7 @@ class player_controller: public game_engine::component {
             if (cam != nullptr) {
                 std::cout << "Accessing memory\n";
                 cam->pos = transform->pos;
+                cam->dir = transform->dir;
 
             }
         }
@@ -81,9 +85,9 @@ class Player: public game_engine::entity {
 
         void init() {
             std::cout << "init() Player\n";
-            transform.pos.x = 5;
-            transform.pos.y = 5;
-            transform.pos.z = 5;
+            transform.pos.x = 0;
+            transform.pos.y = 0;
+            transform.pos.z = 2;
             
             this->transform.data = new camera_perspective;
             std::unique_ptr<player_controller> charracter = std::make_unique<player_controller>();

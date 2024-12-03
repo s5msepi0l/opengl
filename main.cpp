@@ -39,7 +39,6 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
-    state.renderer->init();
 
     game_engine::deltatime Deltatime;
     game_engine::frametime_manager frametime;
@@ -62,8 +61,6 @@ int main(int argc, const char **argv) {
             
         );
 
-        glfwSwapBuffers(state.window);
-        glfwPollEvents();  
 
         frametime.set_end();
     }

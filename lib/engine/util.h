@@ -35,15 +35,17 @@ namespace std {
 #define u64 uint64_t
 #define i64 int64_t
 
+struct direction{
+    glm::vec3 forward;
+    glm::vec3 right;
+    glm::vec3 up;
+};
+
 // Not really used for holding info, mostly just passing
 typedef struct {
     glm::vec3 pos;
 
-    struct dir{
-        glm::vec3 forwards;
-        glm::vec3 right;
-        glm::vec3 up;
-    }dir;
+    direction dir;
     
     f32 fov = 90;
 }camera_perspective;  
@@ -149,4 +151,4 @@ public:
             cache_map[key] = cache_list.begin();
         }
     }
-};
+};+
