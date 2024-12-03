@@ -21,44 +21,61 @@ void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severi
 
 using namespace glm;
 
-// Vertex data with positions and texture coordinates
-static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-    -1.0f, -1.0f,  1.0f,  0.0f, 1.0f,
-    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-    1.0f,  1.0f, -1.0f,  1.0f, 0.0f,
-    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-    1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
-    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-    1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
-    1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-    1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-    -1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-    -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-    1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
-    -1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-    -1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-    -1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-    -1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-    1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
-    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-    1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-    1.0f,  1.0f, -1.0f,  0.0f, 0.0f,
-    1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-    1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-    1.0f,  1.0f, -1.0f,  0.0f, 0.0f,
-    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-    -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-    1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-    -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-    1.0f, -1.0f,  1.0f,  0.0f, 0.0f
+static const GLfloat g_vertex_buffer_data[6][6 * 5] = {
+    // Side 1: Left face
+    {
+        -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+        -1.0f, -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+        -1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+        -1.0f,  1.0f, -1.0f,  1.0f, 0.0f,
+        -1.0f, -1.0f, -1.0f,  0.0f, 0.0f
+    },
+    // Side 2: Right face
+    {
+         1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+         1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f, -1.0f,  1.0f, 0.0f
+    },
+    // Side 3: Top face
+    {
+        -1.0f,  1.0f, -1.0f,  0.0f, 0.0f,
+        -1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+         1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+         1.0f,  1.0f, -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, -1.0f,  0.0f, 0.0f
+    },
+    // Side 4: Bottom face
+    {
+        -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
+         1.0f, -1.0f,  1.0f,  1.0f, 1.0f,
+        -1.0f, -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,  0.0f, 0.0f
+    },
+    // Side 5: Front face
+    {
+        -1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+         1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+        -1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  1.0f,  0.0f, 0.0f
+    },
+    // Side 6: Back face
+    {
+        -1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+        -1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+         1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+         1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+         1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
+        -1.0f, -1.0f, -1.0f,  0.0f, 0.0f
+    }
 };
 
 class DeltaTime {
@@ -109,8 +126,8 @@ GLuint load_cube_map_tx() {
             return -1;
         }
      
-        std::cout << "Succesfully loaded texture_faces[ +" << i << "] = " << texture_faces[i] << std::endl;
-        std::cout << "Width = " << width << "\nHeight = " << height << "\nnr_channels = " << nr_channels << std::endl;
+        //std::cout << "Succesfully loaded texture_faces[ +" << i << "] = " << texture_faces[i] << std::endl;
+        //std::cout << "Width = " << width << "\nHeight = " << height << "\nnr_channels = " << nr_channels << std::endl;
         
         GLenum fmt = (nr_channels == 4) ? GL_RGBA : GL_RGB;
         GLenum ifmt = (nr_channels == 4) ? GL_RGBA8 : GL_RGB8;
