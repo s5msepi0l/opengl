@@ -221,7 +221,7 @@ void pipeline_renderer::render(camera_perspective *cam) {
             glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
             glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
         }
-
+ 
     }
 
     glBindVertexArray(0);
