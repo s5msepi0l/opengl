@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include <iostream>
 
+#define CUBE_FACE_SZ 6 // 2 triangles
 
 GLuint load_shaders(const char *vertex_file_path, const char *fragment_file_path) {
     // Create the shaders
@@ -11,7 +12,7 @@ GLuint load_shaders(const char *vertex_file_path, const char *fragment_file_path
     std::string VertexShaderCode;
     std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
     if (VertexShaderStream.is_open()) {
-        std::stringstream sstr;
+        std::stringstream sstr; 
         sstr << VertexShaderStream.rdbuf();
         VertexShaderCode = sstr.str();
         VertexShaderStream.close();
@@ -118,8 +119,8 @@ GLuint load_cube_map_tx() {
             return -1;
         }
      
-        std::cout << "Succesfully loaded texture_faces[ +" << i << "] = " << texture_faces[i] << std::endl;
-        std::cout << "Width = " << width << "\nHeight = " << height << "\nnr_channels = " << nr_channels << std::endl;
+        //std::cout << "Succesfully loaded texture_faces[ +" << i << "] = " << texture_faces[i] << std::endl;
+        //std::cout << "Width = " << width << "\nHeight = " << height << "\nnr_channels = " << nr_channels << std::endl;
         
         //GLenum fmt = (nr_channels == 4) ? GL_RGBA : GL_RGB;
         //GLenum ifmt = (nr_channels == 4) ? GL_RGBA8 : GL_RGB8;
@@ -142,9 +143,7 @@ GLuint load_cube_map_tx() {
     return texture;
 }
 
-void pipeline_renderer::init() {
-
-    // Vertex positions (g_vertex_buffer_data)
+/*    // Vertex positions (g_vertex_buffer_data)
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
@@ -176,8 +175,9 @@ void pipeline_renderer::init() {
         0,        // Stride
         (void*)0  // Offset
 );
+*/
 
-
+void pipeline_renderer::init() {
     glfwSetInputMode(state.window, GLFW_STICKY_KEYS, GL_TRUE);
 
     glfwSetInputMode(state.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -209,22 +209,20 @@ void pipeline_renderer::render(camera_perspective *cam) {
     );
 
     GLuint matrix_id = glGetUniformLocation(programID, "MVP");
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+   glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &projection[0][0]);
 
-    glBindVertexArray(VertexArrayID);
-    
-
-    for (int i = 0; i<10; i++) {
-        for (int j = 0; j<10; j++) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0), glm::vec3(i * 2, 0.0f, j * 2));
-            glm::mat4 mvp = projection * view * model;
-            glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
-            glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
+    for (u32 x = 0; x < state.game_world->size; x++) {
+        for (u32 y = 0; y < state.game_world->size; y++) {
+            chunk_faces faces = state.game_world->chunk_calc(x, y);
+            
+            render_faces(faces.front, x, y, face_sides::front_face);
+            render_faces(faces.front, x, y, face_sides::back_face);
+            render_faces(faces.front, x, y, face_sides::left_face);
+            render_faces(faces.front, x, y, face_sides::right_face);
+            render_faces(faces.front, x, y, face_sides::top_face);
+            render_faces(faces.front, x, y, face_sides::bottom_face);
         }
- 
     }
-
-    glBindVertexArray(0);
 
     glfwSwapBuffers(state.window);
     glfwPollEvents();
@@ -232,12 +230,108 @@ void pipeline_renderer::render(camera_perspective *cam) {
 
 pipeline_renderer::~pipeline_renderer() {
     glDeleteProgram(programID);
-    glDeleteBuffers(1, &vertexBuffer);
-    glDeleteVertexArrays(1, &VertexArrayID);
     glfwSetInputMode(state.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 
+void pipeline_renderer::render_faces(const std::vector<glm::vec3> &faces, u32 chunk_x, u32 chunk_y, face_sides face_side) {
+    if (faces.empty()) return ;
+
+    std::vector<instance_data> instance;
+
+    const GLfloat *cube_face;
+    switch(face_side) {
+        case face_sides::front_face:
+            cube_face = g_vertex_buffer_data[0];
+            break;
+        
+        case face_sides::back_face:
+            cube_face = g_vertex_buffer_data[1];
+            break;
+
+        case face_sides::left_face:
+            cube_face = g_vertex_buffer_data[2];
+            break;
+
+        case face_sides::right_face:
+            cube_face = g_vertex_buffer_data[3];
+            break;
+        
+        case face_sides::top_face:
+            cube_face = g_vertex_buffer_data[4];
+            
+            break;
+        
+        case face_sides::bottom_face:
+            cube_face = g_vertex_buffer_data[5];
+            break;
+        
+        default:
+            std::cout << "No face was selected, exiting render_faces()\n";
+    }
+
+    // Create and bind the VAO
+    GLuint VAO, VBO, instanceVBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &instanceVBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * CUBE_FACE_SZ * 5, cube_face, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    // Create and bind the instance VBO
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(instance_data) * faces.size(), &instance[0], GL_STATIC_DRAW);
+
+    // Instance model matrix attribute
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (GLvoid*)0);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (GLvoid*)(sizeof(glm::vec4)));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(instance_data), (GLvoid*)(2 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(4);
+    
+    // Disable vertex attribute array 2,3,4 for the instance data after usage
+    glVertexAttribDivisor(2, 1); // Instance data
+    glVertexAttribDivisor(3, 1); // Instance data
+    glVertexAttribDivisor(4, 1); // Instance data
+
+    // Prepare the model transformation matrix for each instance (for each visible face)
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(chunk_x * CHUNK_WIDTH, 0, chunk_y * CHUNK_DEPTH));
+
+    // Example: Push instance data for each visible face
+    for (size_t i = 0; i < faces.size(); i++) {
+        instance_data data;
+        data.model = model; // Add transformation matrix for the face
+        data.texture_id = glm::vec4(1.0f); // Set texture ID (could be different for each face)
+        instance.push_back(data);
+    }
+
+    // Bind the texture (optional, depending on texture handling)
+    GLuint texture_id = glGetUniformLocation(programID, "textureSampler");
+    glUniform1i(texture_id, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Draw the instances
+    glBindVertexArray(VAO);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, CUBE_FACE_SZ, faces.size());
+    glBindVertexArray(0);
+
+    // Clean up
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &instanceVBO);
+    glDeleteVertexArrays(1, &VAO);
+}
 /*    // Base model matrix (identity for first cube)
     glm::mat4 model1 = glm::mat4(1.0f);
 

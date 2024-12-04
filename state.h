@@ -22,17 +22,22 @@ struct State {
     public:
     u32 width     = 1920;
     u32 height    = 1080;
+
     u32 framerate = 60;
+    u32 tickrate = 24;
+
+    f32 tick;
+    f32 tick_inc;
+
+    f32 deltatime;
 
     std::unique_ptr<game_engine::engine> game;
     std::unique_ptr<game_engine::ecs> entities;
-
-    f32 deltatime;
+    std::unique_ptr<world> game_world;
 
     GLFWwindow *window;
     std::unique_ptr<pipeline_renderer> renderer;
     State();
 };
-
 
 extern State state;

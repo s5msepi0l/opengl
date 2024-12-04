@@ -50,17 +50,22 @@ int main(int argc, const char **argv) {
     state.entities->add_entity("Player", &player);
     state.renderer->init();
 
+    state.game_world->init();
+
     while(glfwWindowShouldClose(state.window) == 0 && !glfwGetKey(state.window, GLFW_KEY_ESCAPE)){
-        std::cout << "tick\n";
         frametime.set_start();
         state.deltatime = Deltatime.update();
 
-        state.game->tick();
         state.renderer->render(
             static_cast<camera_perspective*>(player.transform.data)
             
         );
 
+        state.tick += state.tick_inc;
+        if (state.tick >= 1.0) {
+            state.game->tick();
+            state.tick = 0.0;
+        }
 
         frametime.set_end();
     }
