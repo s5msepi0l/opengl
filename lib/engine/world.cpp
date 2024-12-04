@@ -1,13 +1,5 @@
 #include "world.h"
 
-enum class face_sides{
-    front_face = 1,
-    back_face = 2,
-    left_face = 3,
-    right_face = 4,
-    top_face = 5,
-    bottom_face = 6
-};
 //populate w some block so i can get things going
 void world::init() {
     update_distance(DEFAULT_CHUNK_DISTANCE);
@@ -51,6 +43,7 @@ world_faces world::face_calc() {
             faces.chunks[chunk_x][chunk_y] = face;
         }
     }
+    return faces;
 }
 
 chunk_faces world::chunk_calc(u32 chunk_x, u32 chunk_y) {

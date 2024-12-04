@@ -234,13 +234,13 @@ pipeline_renderer::~pipeline_renderer() {
 }
 
 
-void pipeline_renderer::render_faces(const std::vector<glm::vec3> &faces, u32 chunk_x, u32 chunk_y, face_sides face_side) {
+void pipeline_renderer::render_faces(const std::vector<glm::vec3> &faces, u32 chunk_x, u32 chunk_y, face_sides face) {
     if (faces.empty()) return ;
 
     std::vector<instance_data> instance;
 
     const GLfloat *cube_face;
-    switch(face_side) {
+    switch(face) {
         case face_sides::front_face:
             cube_face = g_vertex_buffer_data[0];
             break;

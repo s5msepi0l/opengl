@@ -4,7 +4,6 @@
 #include "util.h"
 #include "../stb/std_image.h"
 
-#include "world.h"
 
 #include <vector>
 #include <ctime>
@@ -22,15 +21,6 @@ typedef struct {
     u16 x;
     u16 y;
 } px_offset;
-
-enum class face_sides{
-    front_face = 1,
-    back_face = 2,
-    left_face = 3,
-    right_face = 4,
-    top_face = 5,
-    bottom_face = 6
-};
 
 static const GLfloat g_vertex_buffer_data[6][30] = {
     { //front face
@@ -105,5 +95,5 @@ class pipeline_renderer {
     
         ~pipeline_renderer();
     private:
-        void render_faces(const std::vector<glm::vec3> &faces, u32 chunk_x, u32 chunk_y, face_sides face_side);
+        void render_faces(const std::vector<glm::vec3> &faces, u32 chunk_x, u32 chunk_y, face_sides face);
 };

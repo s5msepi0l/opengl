@@ -4,7 +4,7 @@ CC = g++
 CFLAGS = -std=c++17 -Wall
 LDFLAGS = -lGL -lGLU -lglut -lGLEW -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
 
-SRC_FILES = main.cpp state.cpp lib/engine/renderer.cpp lib/engine/game_engine.cpp lib/engine/world.cpp
+SRC_FILES = main.cpp state.cpp lib/engine/world.cpp lib/engine/renderer.cpp lib/engine/game_engine.cpp
 
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 

@@ -41,6 +41,15 @@ struct direction{
     glm::vec3 up;
 };
 
+enum class face_sides{
+    front_face = 1,
+    back_face = 2,
+    left_face = 3,
+    right_face = 4,
+    top_face = 5,
+    bottom_face = 6
+};
+
 // Not really used for holding info, mostly just passing
 typedef struct {
     glm::vec3 pos;

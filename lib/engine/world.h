@@ -1,9 +1,9 @@
 #pragma once
 
-#define DEFAULT_CHUNK_DISTANCE 8
-
 #include "../../state.h"
 #include "util.h"
+#define DEFAULT_CHUNK_DISTANCE 8
+
 
 #define BLK_AIR   0
 #define BLK_GRASS 1
@@ -19,14 +19,6 @@
 */
 //which sides are covered by other blocks, 1 = covered
 
-enum class face_sides{
-    front_face = 1,
-    back_face = 2,
-    left_face = 3,
-    right_face = 4,
-    top_face = 5,
-    bottom_face = 6
-};
 typedef struct {
     std::vector<glm::vec3> front;
     std::vector<glm::vec3> back;
@@ -54,8 +46,8 @@ typedef struct {
     //light levels and so on
 
     inline bool is_opaque() const {
-        (prop == 1) ? true : false;
-    } 
+        return prop;
+    }
 }block;
 
 typedef struct {

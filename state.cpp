@@ -3,7 +3,6 @@
 #include "lib/engine/renderer.h" // For the engine and ecs classes
 #include "lib/engine/world.h"
 
-
 State state;
 
 State::State() {

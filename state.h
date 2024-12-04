@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory>
+#include "lib/engine/world.h"
 #include "lib/engine/util.h"
 #include "lib/engine/renderer.h"
-#include "lib/engine/world.h"
 
 //using namespace game_engine;
 
@@ -16,6 +16,7 @@ namespace game_engine {
 };
 
 class pipeline_renderer;
+class world;
 
 
 struct State {
